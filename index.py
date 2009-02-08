@@ -84,12 +84,19 @@ def state_audio_metadata(ts, filename, metadata):
   track_uri = RDF.Node(RDF.Uri(track_uri))
 
   ts.state(track_uri, ns['rdf'].type, ns['mo'].Track)
+  ts.state(track_uri, ns['foaf'].maker, artist_uri)
   # XXX use dc:title here?
   ts.state(track_uri, ns['dc'].title, RDF.Node(metadata['title'][0]))
 
-  tn = RDF.Node(literal=metadata['tracknumber'][0], datatype=ns['xs'].int.uri)
+  # some artists get clever and have craaaaazzy track numbers
+  if 'tracknumber' in metadata:
+    tn = metadata['tracknumber'][0]
+  else:
+    tn = '0'
+
+  tn = RDF.Node(literal=tn, datatype=ns['xs'].int.uri)
+
   ts.state(track_uri, ns['mo'].track_number, tn)
-  ts.state(track_uri, ns['foaf'].maker, artist_uri)
 
   # the particular file
   file_uri = 'file://' + filename
@@ -102,6 +109,10 @@ if __name__ == '__main__':
     for name in filenames:
       file = os.path.join(dirpath, name)
       metadata = get_audio_metadata(file)
+      if not metadata:
+        print 'could not extract metadata, skipping', name
+        continue
+
       state_audio_metadata(TripleStore, file, metadata)
 
   print '---'
