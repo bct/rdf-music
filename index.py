@@ -14,8 +14,8 @@ from mutagen.oggvorbis import OggVorbis
 from mutagen.id3 import ID3
 
 import RDF
-storage = RDF.HashStorage('music', options="hash-type='bdb'")
-model = RDF.Model(storage)
+
+import TripleStore
 
 def get_audio_metadata(filename):
   '''take a path to a music file, grab the metadata with mutagen
@@ -56,7 +56,6 @@ output fields defined at <http://wiki.musicbrainz.org/PicardTagMapping>
 
   return dict
 
-
 ns = {
   'dc': RDF.NS('http://purl.org/dc/elements/1.1/'),
   'foaf': RDF.NS('http://xmlns.com/foaf/0.1/'),
@@ -71,7 +70,7 @@ ns = {
   'xs': RDF.NS('http://www.w3.org/2001/XMLSchema#'),
 }
 
-def state_audio_metadata(filename, metadata):
+def state_audio_metadata(ts, filename, metadata):
   # it doesn't matter if we add the same statement multiple times, so don't
   # bother checking if it exists (this could cause problems if we have eg.
   # different artist names with the same musicbrainz_artistid
@@ -80,59 +79,45 @@ def state_audio_metadata(filename, metadata):
   artist_uri = 'http://zitgist.com/music/artist/' + metadata['musicbrainz_artistid'][0]
   artist_uri = RDF.Node(RDF.Uri(artist_uri))
 
-  st = RDF.Statement(artist_uri, ns['rdf'].type, ns['mo'].MusicArtist)
-  model.append(st)
-
-  st = RDF.Statement(artist_uri, ns['foaf'].name, RDF.Node(metadata['artist'][0]))
-  model.append(st)
+  ts.state(artist_uri, ns['rdf'].type, ns['mo'].MusicArtist)
+  ts.state(artist_uri, ns['foaf'].name, RDF.Node(metadata['artist'][0]))
 
   # album
   album_uri = 'http://zitgist.com/music/record/' + metadata['musicbrainz_albumid'][0]
   album_uri = RDF.Node(RDF.Uri(album_uri))
 
-  st = RDF.Statement(album_uri, ns['rdf'].type, ns['mo'].Record)
-  model.append(st)
-
+  ts.state(album_uri, ns['rdf'].type, ns['mo'].Record)
   # XXX does album artist have an MO term?
-  st = RDF.Statement(album_uri, ns['foaf'].maker, artist_uri)
-  model.append(st)
-
+  ts.state(album_uri, ns['foaf'].maker, artist_uri)
   # XXX use dc:title here?
-  st = RDF.Statement(album_uri, ns['dc'].title, RDF.Node(metadata['album'][0]))
-  model.append(st)
+  ts.state(album_uri, ns['dc'].title, RDF.Node(metadata['album'][0]))
 
   # track
   track_uri = 'http://zitgist.com/music/track/' + metadata['musicbrainz_trackid'][0]
   track_uri = RDF.Node(RDF.Uri(track_uri))
 
-  st = RDF.Statement(track_uri, ns['rdf'].type, ns['mo'].Track)
-  model.append(st)
-
+  ts.state(track_uri, ns['rdf'].type, ns['mo'].Track)
   # XXX use dc:title here?
-  st = RDF.Statement(track_uri, ns['dc'].title, RDF.Node(metadata['title'][0]))
-  model.append(st)
+  ts.state(track_uri, ns['dc'].title, RDF.Node(metadata['title'][0]))
 
-  st = RDF.Statement(track_uri, ns['mo'].track_number, RDF.Node(literal=metadata['tracknumber'][0], datatype=ns['xs'].int.uri))
-  model.append(st)
-
-  st = RDF.Statement(track_uri, ns['foaf'].maker, artist_uri)
-  model.append(st)
+  tn = RDF.Node(literal=metadata['tracknumber'][0], datatype=ns['xs'].int.uri)
+  ts.state(track_uri, ns['mo'].track_number, tn)
+  ts.state(track_uri, ns['foaf'].maker, artist_uri)
 
   # the particular file
   file_uri = 'file://' + filename
   file_uri = RDF.Node(RDF.Uri(file_uri))
 
-  st = RDF.Statement(file_uri, ns['mo'].encodes, track_uri)
-  model.append(st)
+  ts.state(file_uri, ns['mo'].encodes, track_uri)
 
 if __name__ == '__main__':
   for dirpath, dirnames, filenames in os.walk(path):
     for name in filenames:
       file = os.path.join(dirpath, name)
       metadata = get_audio_metadata(file)
-      state_audio_metadata(file, metadata)
+      state_audio_metadata(TripleStore, file, metadata)
 
   print '---'
 
-  for statement in model:
+  for statement in TripleStore.model:
     print statement
