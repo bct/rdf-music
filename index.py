@@ -30,7 +30,7 @@ output fields defined at <http://wiki.musicbrainz.org/PicardTagMapping>
 
   #   doing this based on extension is wrong
   # ~* filetype is metadata, no gods no masters *~
-  ext = os.path.splitext(name)[1]
+  ext = os.path.splitext(name)[1].lower()
   if ext == '.mp3':
     file = ID3(filename)
 
