@@ -118,6 +118,13 @@ def state_audio_metadata(filename, metadata):
   st = RDF.Statement(track_uri, ns['foaf'].maker, artist_uri)
   model.append(st)
 
+  # the particular file
+  file_uri = 'file://' + filename
+  file_uri = RDF.Node(RDF.Uri(file_uri))
+
+  st = RDF.Statement(file_uri, ns['mo'].encodes, track_uri)
+  model.append(st)
+
 if __name__ == '__main__':
   for dirpath, dirnames, filenames in os.walk(path):
     for name in filenames:
