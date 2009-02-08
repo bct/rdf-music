@@ -5,7 +5,7 @@ Recursively indexes a directory of music files (mp3, ogg, flac) and watches
 for changes.
 '''
 
-path = '/home/data/music'
+path = '/home/data/thingy/music'
 
 import os
 
@@ -26,6 +26,8 @@ MusicBrainz data
 output fields defined at <http://wiki.musicbrainz.org/PicardTagMapping>
 '''
 
+  print filename
+
   dict = None
 
   #   doing this based on extension is wrong
@@ -43,8 +45,8 @@ output fields defined at <http://wiki.musicbrainz.org/PicardTagMapping>
     dict['musicbrainz_artistid'] = file['TXXX:MusicBrainz Artist Id'].text
     dict['artist'] = file['TPE1'].text
 
-    dict['musicbrainz_albumartistid'] = file['TXXX:MusicBrainz Album Artist Id'].text
-    dict['albumartist'] = file['TPE2'].text
+    #dict['musicbrainz_albumartistid'] = file['TXXX:MusicBrainz Album Artist Id'].text
+    #dict['albumartist'] = file['TPE2'].text
 
     dict['musicbrainz_albumid'] = file['TXXX:MusicBrainz Album Id'].text
     dict['album'] = file['TALB'].text
@@ -95,7 +97,6 @@ def state_audio_metadata(ts, filename, metadata):
     tn = '0'
 
   tn = RDF.Node(literal=tn, datatype=ns['xs'].int.uri)
-
   ts.state(track_uri, ns['mo'].track_number, tn)
 
   # the particular file
