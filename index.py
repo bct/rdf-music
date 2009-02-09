@@ -26,8 +26,6 @@ MusicBrainz data
 output fields defined at <http://wiki.musicbrainz.org/PicardTagMapping>
 '''
 
-  print filename
-
   dict = None
 
   #   doing this based on extension is wrong
@@ -45,8 +43,11 @@ output fields defined at <http://wiki.musicbrainz.org/PicardTagMapping>
     dict['musicbrainz_artistid'] = file['TXXX:MusicBrainz Artist Id'].text
     dict['artist'] = file['TPE1'].text
 
-    #dict['musicbrainz_albumartistid'] = file['TXXX:MusicBrainz Album Artist Id'].text
-    #dict['albumartist'] = file['TPE2'].text
+    if 'TXXX:MusicBrainz Album Artist Id' in file:
+      dict['musicbrainz_albumartistid'] = file['TXXX:MusicBrainz Album Artist Id'].text
+
+    # ignore TPE2 (which MB uses for album artist name), it's rarely there
+    # and it's being misused anyhow
 
     dict['musicbrainz_albumid'] = file['TXXX:MusicBrainz Album Id'].text
     dict['album'] = file['TALB'].text
@@ -76,10 +77,17 @@ def state_audio_metadata(ts, filename, metadata):
   album_uri = RDF.Node(RDF.Uri(album_uri))
 
   ts.state(album_uri, ns['rdf'].type, ns['mo'].Record)
-  # XXX does album artist have an MO term?
-  ts.state(album_uri, ns['foaf'].maker, artist_uri)
   # XXX use dc:title here?
   ts.state(album_uri, ns['dc'].title, RDF.Node(metadata['album'][0]))
+
+  if 'musicbrainz_albumartistid' in metadata:
+    album_artist_uri = 'http://zitgist.com/music/artist/' + metadata['musicbrainz_albumartistid'][0]
+    album_artist_uri = RDF.Node(RDF.Uri(album_artist_uri))
+  else:
+    album_artist_uri = artist_uri
+
+  # XXX does album artist have an MO term?
+  ts.state(album_uri, ns['foaf'].maker, album_artist_uri)
 
   # track
   track_uri = 'http://zitgist.com/music/track/' + metadata['musicbrainz_trackid'][0]

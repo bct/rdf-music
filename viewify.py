@@ -12,11 +12,19 @@ import TripleStore
 from Vocab import ns
 
 class index:
+  def artist_name(self, uri):
+    return str(TripleStore.model.get_target(uri, ns['foaf'].name))
+
   def artists(self):
     _artists = []
     for uri in TripleStore.model.get_sources(ns['rdf'].type, ns['mo'].MusicArtist):
-      name = str(TripleStore.model.get_target(uri, ns['foaf'].name))
+      name = self.artist_name(uri)
       _artists.append((name, uri,))
+
+    # hardcoding this is yuk
+    va_uri = 'http://zitgist.com/music/artist/89ad4ac3-39f7-470e-963a-56509c546377'
+    va_uri = RDF.Node(RDF.Uri(va_uri))
+    _artists.append(('Various Artists', va_uri,))
 
     _artists.sort()
 
@@ -52,13 +60,18 @@ class index:
     out = '<ul>'
 
     for name, artist_uri in self.artists():
+      _albums = self.albums(artist_uri)
+
+      if len(_albums) == 0:
+        continue
+
       out += '\n<li>' + name
-      out += '\n<ul>'
+      out += '\n  <ul>'
 
-      for title, album_uri in self.albums(artist_uri):
-        out += '\n<li>' + title
+      for title, album_uri in _albums:
+        out += '\n  <li>' + title
 
-      out += '\n</ul>'
+      out += '\n  </ul>'
 
     return out
 
