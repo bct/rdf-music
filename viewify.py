@@ -6,6 +6,8 @@ urls = (
   '/', 'index',
 )
 
+render = web.template.render('templates/')
+
 import RDF
 import TripleStore
 
@@ -57,23 +59,21 @@ class index:
   def GET(self):
     web.header('Content-Type', 'text/html; charset=utf-8')
 
-    out = '<ul>'
+    artists = []
+    albums = {}
 
+    # ugh this is like O(n**n!)
     for name, artist_uri in self.artists():
       _albums = self.albums(artist_uri)
 
+      # don't include artists with no albums
       if len(_albums) == 0:
         continue
 
-      out += '\n<li>' + name
-      out += '\n  <ul>'
+      artists.append((name, artist_uri,))
+      albums[artist_uri] = _albums
 
-      for title, album_uri in _albums:
-        out += '\n  <li>' + title
-
-      out += '\n  </ul>'
-
-    return out
+    return render.albums(artists, albums)
 
 app = web.application(urls, globals())
 

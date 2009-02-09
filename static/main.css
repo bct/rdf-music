@@ -1,0 +1,10 @@
+body {
+  background: #aaa;
+  margin: 2em;
+}
+
+/* stuff with an onclick for in-place editing */
+.inPlace {
+  text-decoration: underline;
+  cursor: pointer;
+}

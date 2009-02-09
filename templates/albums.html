@@ -1,0 +1,13 @@
+$def with (artists, albums)
+
+<link rel="stylesheet" href="static/main.css">
+<script src="static/jquery.js"></script>
+<script src="static/tag-in-place.js"></script>
+
+<ul>
+$for name, artist_uri in artists:
+    <li>$name <span class="tags"></span>
+      <ul>
+        $for title, album_uri in albums[artist_uri]:
+            <li>$title
+      </ul>
