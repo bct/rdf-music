@@ -14,65 +14,39 @@ import TripleStore
 from Vocab import ns
 
 class index:
-  def artist_name(self, uri):
-    return str(TripleStore.model.get_target(uri, ns['foaf'].name))
+  def artists_albums(self):
+    # get a dict of all albums, keyed by artist URI
+    albums = {}
 
-  def artists(self):
-    _artists = []
-    for uri in TripleStore.model.get_sources(ns['rdf'].type, ns['mo'].MusicArtist):
-      name = self.artist_name(uri)
-      _artists.append((name, uri,))
+    _albums = TripleStore.model.get_sources(ns['rdf'].type, ns['mo'].Record)
+    for album_uri in _albums:
+      artist_uri = TripleStore.model.get_target(album_uri, ns['foaf'].maker)
+      title = str(TripleStore.model.get_target(album_uri, ns['dc'].title))
 
-    # hardcoding this is yuk
-    va_uri = 'http://zitgist.com/music/artist/89ad4ac3-39f7-470e-963a-56509c546377'
-    va_uri = RDF.Node(RDF.Uri(va_uri))
-    _artists.append(('Various Artists', va_uri,))
+      if not artist_uri in albums:
+        albums[artist_uri] = []
 
-    _artists.sort()
+      albums[artist_uri].append((title, album_uri,))
 
-    return _artists
+    # get a list of all artists with an album in the dict
+    artists = []
 
-  def albums(self, artist_uri):
-    # cache this, there's probably a better way...
-    if not hasattr(self, '_artist_albums'):
-      self._artist_albums = {}
+    for artist_uri in albums.keys():
+      name = self.artist_name(artist_uri)
+      artists.append((name, artist_uri,))
 
-      _albums = TripleStore.model.get_sources(ns['rdf'].type, ns['mo'].Record)
-      for album_uri in _albums:
-        a_uri = TripleStore.model.get_target(album_uri, ns['foaf'].maker)
+    return (artists, albums)
 
-        if not a_uri in self._artist_albums:
-          self._artist_albums[a_uri] = []
-
-        title = str(TripleStore.model.get_target(album_uri, ns['dc'].title))
-
-        self._artist_albums[a_uri].append((title, album_uri,))
-
-      for a_uri in self._artist_albums:
-        self._artist_albums[a_uri].sort()
-
-    if artist_uri in self._artist_albums:
-      return self._artist_albums[artist_uri]
+  def artist_name(self, artist_uri):
+    if str(artist_uri.uri) == 'http://zitgist.com/music/artist/89ad4ac3-39f7-470e-963a-56509c546377':
+      return 'Various Artists'
     else:
-      return []
+      return str(TripleStore.model.get_target(artist_uri, ns['foaf'].name))
 
   def GET(self):
     web.header('Content-Type', 'text/html; charset=utf-8')
 
-    artists = []
-    albums = {}
-
-    # ugh this is like O(n**n!)
-    for name, artist_uri in self.artists():
-      _albums = self.albums(artist_uri)
-
-      # don't include artists with no albums
-      if len(_albums) == 0:
-        continue
-
-      artists.append((name, artist_uri,))
-      albums[artist_uri] = _albums
-
+    artists, albums = self.artists_albums()
     return render.albums(artists, albums)
 
 app = web.application(urls, globals())
