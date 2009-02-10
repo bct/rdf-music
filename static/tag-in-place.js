@@ -3,7 +3,7 @@ $(document).ready(function(){
     var editThing = $('<span class="inPlace">[t]</span>');
     var tags = $(this);
     editThing.click(function() {
-      var uri = 'http://www.google.com/';
+      var uri = tags.parent().attr('about');
 
       var tagsInput = $("<input class='tagsInput' name='tags'>");
       tagsInput.attr('value', tags.text());
@@ -11,10 +11,12 @@ $(document).ready(function(){
       tags.replaceWith(tagsInput);
 
       tagsInput.blur(function() {
-        var wait = 'wait...';
+        var wait = $('<span class="ajaxStatus">wait...</span>');
+        var sentTags = tagsInput.attr('value');
         tagsInput.replaceWith(wait);
-        $.post('./foo', {uri: uri, tags: tagsInput.attr('value')}, function(data) {
-          wait.replaceWith('ok.');
+        $.post('tag', {uri: uri, tags: sentTags}, function(data) {
+          tags.text(sentTags);
+          wait.replaceWith(tags);
         }, 'text');
       });
 

@@ -3,8 +3,13 @@ body {
   margin: 2em;
 }
 
+.tags {
+  background: #ccc;
+}
+
 /* stuff with an onclick for in-place editing */
 .inPlace {
+  padding: 0.1em;
   text-decoration: underline;
   cursor: pointer;
 }
