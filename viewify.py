@@ -73,6 +73,13 @@ class tag:
   def tag(self, resource, tags):
     tags = tags.strip().split(' ')
 
+    resource = RDF.Node(RDF.Uri(resource))
+
+    # remove all existing tags on this resource
+    q = RDF.Statement(resource, ns['nao'].hasTag, None)
+    for st in TripleStore.model.find_statements(q):
+      del TripleStore.model[st]
+
     for _tag in tags:
       # XXX check if it's a nao:Tag too
       tag = TripleStore.model.get_source(ns['nao'].prefLabel, RDF.Node(_tag))
@@ -83,7 +90,7 @@ class tag:
         TripleStore.state(tag, ns['rdf'].type, ns['nao'].Tag)
         TripleStore.state(tag, ns['nao'].prefLabel, RDF.Node(_tag))
 
-      TripleStore.state(RDF.Node(RDF.Uri(resource)), ns['nao'].hasTag, tag)
+      TripleStore.state(resource, ns['nao'].hasTag, tag)
 
   def POST(self):
     i = web.input()
