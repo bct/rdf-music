@@ -46,6 +46,8 @@ class index:
       name = self.artist_name(artist_uri)
       artists.append((name, artist_uri,))
 
+    artists.sort()
+
     return (artists, albums)
 
   def artist_name(self, artist_uri):
