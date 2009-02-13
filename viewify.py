@@ -19,7 +19,7 @@ def rating(resource):
   if rating is None:
     return 0
 
-  return rating.literal_value['string']
+  return int(rating.literal_value['string']) / 2
 
 template_globals = {'rating': rating}
 render = web.template.render('templates/', globals=template_globals)
@@ -110,6 +110,8 @@ class rate:
 
   def rate(self, resource, rating):
     resource = RDF.Node(RDF.Uri(resource))
+
+    rating = str(int(rating) * 2)
     rating = RDF.Node(literal=rating, datatype=ns['xs'].float.uri)
 
     # delete any existing ratings for this resource
