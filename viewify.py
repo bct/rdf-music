@@ -5,14 +5,24 @@ import web
 urls = (
   '/', 'index',
   '/tag', 'tag',
+  '/rate', 'rate',
 )
-
-render = web.template.render('templates/')
 
 import RDF
 import TripleStore
 
 from Vocab import ns
+
+def rating(resource):
+  rating = TripleStore.model.get_target(resource, ns['nao'].numericRating)
+
+  if rating is None:
+    return 0
+
+  return rating.literal_value['string']
+
+template_globals = {'rating': rating}
+render = web.template.render('templates/', globals=template_globals)
 
 class index:
   def artists_albums(self):
@@ -71,14 +81,12 @@ class tag:
   '''tag a resource using nao'''
 
   def tag(self, resource, tags):
-    tags = tags.strip().split(' ')
-
     resource = RDF.Node(RDF.Uri(resource))
+    # space-separated, remove empty
+    tags = [x for x in tags.strip().split(' ') if x != '']
 
     # remove all existing tags on this resource
-    q = RDF.Statement(resource, ns['nao'].hasTag, None)
-    for st in TripleStore.model.find_statements(q):
-      del TripleStore.model[st]
+    TripleStore.forget(resource, ns['nao'].hasTag, None)
 
     for _tag in tags:
       # XXX check if it's a nao:Tag too
@@ -97,7 +105,27 @@ class tag:
 
     self.tag(i.uri, i.tags)
 
+class rate:
+  '''rate a resource using nao'''
+
+  def rate(self, resource, rating):
+    resource = RDF.Node(RDF.Uri(resource))
+    rating = RDF.Node(literal=rating, datatype=ns['xs'].float.uri)
+
+    # delete any existing ratings for this resource
+    TripleStore.forget(resource, ns['nao'].numericRating, None)
+
+    TripleStore.state(resource, ns['nao'].numericRating, rating)
+
+  def POST(self):
+    i = web.input()
+    self.rate(i.uri, i.rating)
+
 app = web.application(urls, globals())
 
 if __name__ == '__main__':
   app.run()
+
+  print 'a'
+  TripleStore.model.sync()
+  print 'b'

@@ -10,6 +10,20 @@ body {
 /* stuff with an onclick for in-place editing */
 .inPlace {
   padding: 0.1em;
-  text-decoration: underline;
   cursor: pointer;
+  font-weight: bold;
+  font-size: 0.8em;
+}
+
+.score {
+  padding: 0.3em;
+}
+
+.star {
+  font-size: 2em;
+  cursor: pointer;
+}
+
+.star.selected {
+  color: red;
 }
