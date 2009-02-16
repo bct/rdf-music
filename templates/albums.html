@@ -1,4 +1,4 @@
-$def with (artists, albums, artist_tags)
+$def with (artists, albums)
 
 <link rel="stylesheet" href="static/main.css">
 
@@ -28,7 +28,7 @@ $def show_albums(artist_uri):
 $for name, artist_uri in artists:
     <li class="artist" about="$artist_uri.uri">$name
       <span class="tags">
-      $for tag in artist_tags[artist_uri]:
+      $for tag in tags(artist_uri):
           $tag
       </span>
       $:show_albums(artist_uri)

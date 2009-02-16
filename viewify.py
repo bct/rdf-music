@@ -27,7 +27,7 @@ def tags(resource):
     name = str(TripleStore.model.get_target(tag, ns['nao'].prefLabel))
     yield name
 
-template_globals = {'rating': rating}
+template_globals = {'rating': rating, 'tags': tags}
 render = web.template.render('templates/', globals=template_globals)
 
 import subprocess
@@ -82,23 +82,12 @@ class index:
     else:
       return str(TripleStore.model.get_target(artist_uri, ns['foaf'].name))
 
-  def artist_tags(self, artists):
-    '''a dict with artists' tags, keyed by artist URI'''
-
-    _tags = {}
-
-    for name, artist_uri in artists:
-      _tags[artist_uri] = tags(artist_uri)
-
-    return _tags
-
   def GET(self):
     web.header('Content-Type', 'text/html; charset=utf-8')
 
     artists, albums = self.artists_albums()
-    artist_tags = self.artist_tags(artists)
 
-    return render.albums(artists, albums, artist_tags)
+    return render.albums(artists, albums)
 
 class tag:
   '''tag a resource using nao'''
