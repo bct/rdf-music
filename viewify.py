@@ -35,7 +35,7 @@ import subprocess
 def filename(track):
   filename = str(TripleStore.model.get_source(ns['mo'].encodes, track).uri)
   # strip the file:// scheme prefix
-  filename = filename[7:]
+  return filename[7:]
 
 def ipod_addalbum(album):
   album = RDF.Node(RDF.Uri(album))
@@ -45,7 +45,11 @@ def ipod_addalbum(album):
   for track in TripleStore.model.get_targets(album, ns['mo'].track):
     cmd.append(filename(track))
 
-  for tag in _tags:
+  artist = TripleStore.model.get_target(album, ns['foaf'].maker)
+  for tag in tags(artist):
+    cmd += ['-p', tag]
+
+  for tag in tags(album):
     cmd += ['-p', tag]
 
   subprocess.call(cmd)
