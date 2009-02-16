@@ -77,7 +77,6 @@ def state_audio_metadata(ts, filename, metadata):
   album_uri = RDF.Node(RDF.Uri(album_uri))
 
   ts.state(album_uri, ns['rdf'].type, ns['mo'].Record)
-  # XXX use dc:title here?
   ts.state(album_uri, ns['dc'].title, RDF.Node(metadata['album'][0]))
 
   if 'musicbrainz_albumartistid' in metadata:
@@ -94,8 +93,9 @@ def state_audio_metadata(ts, filename, metadata):
   track_uri = RDF.Node(RDF.Uri(track_uri))
 
   ts.state(track_uri, ns['rdf'].type, ns['mo'].Track)
+  ts.state(album_uri, ns['mo'].track, track_uri)
+
   ts.state(track_uri, ns['foaf'].maker, artist_uri)
-  # XXX use dc:title here?
   ts.state(track_uri, ns['dc'].title, RDF.Node(metadata['title'][0]))
 
   # some artists get clever and have craaaaazzy track numbers

@@ -27,3 +27,8 @@ body {
 .star.selected {
   color: red;
 }
+
+.ipodDl {
+  font-size: 2em;
+  cursor: pointer;
+}

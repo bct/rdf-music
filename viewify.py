@@ -6,6 +6,7 @@ urls = (
   '/', 'index',
   '/tag', 'tag',
   '/rate', 'rate',
+  '/ipod', 'ipod',
 )
 
 import RDF
@@ -21,8 +22,33 @@ def rating(resource):
 
   return int(rating.literal_value['string']) / 2
 
+def tags(resource):
+  for tag in TripleStore.model.get_targets(resource, ns['nao'].hasTag):
+    name = str(TripleStore.model.get_target(tag, ns['nao'].prefLabel))
+    yield name
+
 template_globals = {'rating': rating}
 render = web.template.render('templates/', globals=template_globals)
+
+import subprocess
+
+def filename(track):
+  filename = str(TripleStore.model.get_source(ns['mo'].encodes, track).uri)
+  # strip the file:// scheme prefix
+  filename = filename[7:]
+
+def ipod_addalbum(album):
+  album = RDF.Node(RDF.Uri(album))
+
+  cmd = ['gnupod_addsong.pl']
+
+  for track in TripleStore.model.get_targets(album, ns['mo'].track):
+    cmd.append(filename(track))
+
+  for tag in _tags:
+    cmd += ['-p', tag]
+
+  subprocess.call(cmd)
 
 class index:
   def artists_albums(self):
@@ -56,20 +82,15 @@ class index:
     else:
       return str(TripleStore.model.get_target(artist_uri, ns['foaf'].name))
 
-  def tags(self, resource):
-    for tag in TripleStore.model.get_targets(resource, ns['nao'].hasTag):
-      name = str(TripleStore.model.get_target(tag, ns['nao'].prefLabel))
-      yield name
-
   def artist_tags(self, artists):
     '''a dict with artists' tags, keyed by artist URI'''
 
-    tags = {}
+    _tags = {}
 
     for name, artist_uri in artists:
-      tags[artist_uri] = self.tags(artist_uri)
+      _tags[artist_uri] = tags(artist_uri)
 
-    return tags
+    return _tags
 
   def GET(self):
     web.header('Content-Type', 'text/html; charset=utf-8')
@@ -125,11 +146,14 @@ class rate:
     i = web.input()
     self.rate(i.uri, i.rating)
 
+class ipod:
+  '''manage moving tracks to/from an ipod'''
+  def POST(self):
+    i = web.input()
+    ipod_addalbum(i.album)
+
 app = web.application(urls, globals())
 
 if __name__ == '__main__':
   app.run()
-
-  print 'a'
   TripleStore.model.sync()
-  print 'b'
