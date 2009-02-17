@@ -7,6 +7,7 @@ urls = (
   '/tag', 'tag',
   '/rate', 'rate',
   '/ipod', 'ipod',
+  '/dump', 'dump',
 )
 
 import RDF
@@ -144,6 +145,12 @@ class ipod:
   def POST(self):
     i = web.input()
     ipod_addalbum(i.album)
+
+class dump:
+  '''dump the database into NTriples'''
+  def GET(self):
+    sr = RDF.NTriplesSerializer()
+    return sr.serialize_model_to_string(TripleStore.model)
 
 app = web.application(urls, globals())
 
