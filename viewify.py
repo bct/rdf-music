@@ -19,24 +19,7 @@ from Vocab import ns
 template_globals = {'rating': Vocab.rating, 'tags': Vocab.tags}
 render = web.template.render('templates/', globals=template_globals)
 
-import subprocess
-
-def ipod_addalbum(album):
-  album = RDF.Node(RDF.Uri(album))
-
-  cmd = ['gnupod_addsong.pl', '--decode=mp3']
-
-  for track in TripleStore.model.get_targets(album, ns['mo'].track):
-    cmd.append(track_filename(track))
-
-  artist = TripleStore.model.get_target(album, ns['foaf'].maker)
-  for tag in tags(artist):
-    cmd += ['-p', tag]
-
-  for tag in tags(album):
-    cmd += ['-p', tag]
-
-  subprocess.call(cmd)
+import gnupod
 
 class index:
   def GET(self):
@@ -65,7 +48,7 @@ class ipod:
   '''manage moving tracks to/from an ipod'''
   def POST(self):
     i = web.input()
-    ipod_addalbum(i.album)
+    gnupod.add_album(i.album)
 
 class dump:
   '''dump the database into NTriples'''
