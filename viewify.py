@@ -40,7 +40,7 @@ def filename(track):
 def ipod_addalbum(album):
   album = RDF.Node(RDF.Uri(album))
 
-  cmd = ['gnupod_addsong.pl']
+  cmd = ['gnupod_addsong.pl', '--decode=mp3']
 
   for track in TripleStore.model.get_targets(album, ns['mo'].track):
     cmd.append(filename(track))
