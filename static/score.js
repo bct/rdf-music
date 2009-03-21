@@ -4,7 +4,7 @@ function saveRating() {
   var album = $(this).parent().parent();
   var uri = album.attr('about');
 
-  $.post('rate', {uri: uri, rating: value}, function(data) {
+  $.post(app_path('rate'), {uri: uri, rating: value}, function(data) {
     star.prevAll().text('★').addClass('selected');
     star.parent().attr('content', value);
   }, 'text');

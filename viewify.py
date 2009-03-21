@@ -5,6 +5,7 @@ import web
 urls = (
   '/', 'index',
   '/tag', 'tag',
+  '/tag/(.*)', 'taggedalbums',
   '/rate', 'rate',
   '/ipod', 'ipod',
   '/dump', 'dump',
@@ -16,7 +17,12 @@ import TripleStore
 import Vocab
 from Vocab import ns
 
-template_globals = {'rating': Vocab.rating, 'tags': Vocab.tags}
+# modify this if you're mounting somewhere other than the root
+# XXX should be configurable, along with index.py's search path(s)
+def url(path):
+  return '/' + path
+
+template_globals = {'rating': Vocab.rating, 'tags': Vocab.tags, 'url': url}
 render = web.template.render('templates/', globals=template_globals)
 
 import gnupod
@@ -36,6 +42,14 @@ class tag:
     i = web.input()
 
     Vocab.tag(i.uri, i.tags)
+
+class taggedalbums:
+  '''albums tagged with a certain label'''
+
+  def GET(self, tag):
+    artists, albums = Vocab.artists_albums_tagged(tag)
+
+    return render.tagged(tag, artists, albums)
 
 class rate:
   '''rate a resource using nao'''

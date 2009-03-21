@@ -16,6 +16,9 @@ ns = {
 
 import TripleStore
 
+def resource_is_type(s, t):
+  return TripleStore.model.get_target(s, ns['rdf'].type) == t
+
 def rating(resource):
   '''a resource's nao:numericRating'''
   rating = TripleStore.model.get_target(resource, ns['nao'].numericRating)
@@ -99,3 +102,32 @@ def artists_albums():
 
   return (artists, albums)
 
+def artists_albums_tagged(_tag):
+  # get a dict of all albums tagged with a certain label, keyed by artist URI
+  albums = {}
+  artists = []
+
+  tag = TripleStore.model.get_source(ns['nao'].prefLabel, RDF.Node(_tag))
+
+  if tag is None:
+    return (artists, albums)
+
+  _tagged = TripleStore.model.get_sources(ns['nao'].hasTag, tag)
+  for tagged in _tagged:
+    if not resource_is_type(tagged, ns['mo'].MusicArtist):
+      continue
+
+    name = artist_name(tagged)
+    artists.append((name, tagged,))
+
+    albums[tagged] = []
+    for made in TripleStore.model.get_sources(ns['foaf'].maker, tagged):
+      if not resource_is_type(made, ns['mo'].Record):
+        continue
+
+      title = str(TripleStore.model.get_target(made, ns['dc'].title))
+      albums[tagged].append((title, made))
+
+  artists.sort()
+
+  return (artists, albums)

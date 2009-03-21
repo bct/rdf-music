@@ -1,4 +1,4 @@
-$def with (artists, albums)
+$def with (tag, artists, albums)
 
 <link rel="stylesheet" href="$url('static/main.css')">
 
@@ -14,9 +14,9 @@ function app_path(path) {
 <script src="$url('static/score.js')"></script>
 <script src="$url('static/ipod.js')"></script>
 
-<title>All albums, by artist</title>
+<title>Music tagged $tag, by artist</title>
 
-<h1>All albums, by artist</h1>
+<h1>Music tagged $tag, by artist</h1>
 
 $def show_albums(artist_uri):
     <ul>

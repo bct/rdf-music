@@ -9,7 +9,7 @@ function sendTags(event) {
 
   tagsInput.replaceWith(wait);
 
-  $.post('tag', {uri: event.data.uri, tags: sentTags}, function(data) {
+  $.post(app_path('tag'), {uri: event.data.uri, tags: sentTags}, function(data) {
     event.data.tagsSpan.text(sentTags);
     wait.replaceWith(event.data.tagsSpan);
   }, 'text');
