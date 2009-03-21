@@ -1,6 +1,21 @@
+html {
+  background: white;
+}
+
 body {
   background: #aaa;
-  margin: 2em;
+  margin: 0 auto;
+  width: 40em;
+  padding: 2em;
+
+  border: 1.5em solid black;
+  border-top: 0;
+  border-bottom: 0;
+}
+
+li.album {
+  background: #bbb;
+  margin: 2px;
 }
 
 .tags {
@@ -17,6 +32,7 @@ body {
 
 .score {
   padding: 0.3em;
+  display: block;
 }
 
 .star {
