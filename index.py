@@ -30,7 +30,7 @@ output fields defined at <http://wiki.musicbrainz.org/PicardTagMapping>
 
   #   doing this based on extension is wrong
   # ~* filetype is metadata, no gods no masters *~
-  ext = os.path.splitext(name)[1].lower()
+  ext = os.path.splitext(filename)[1].lower()
   if ext == '.mp3':
     file = ID3(filename)
 
@@ -60,7 +60,7 @@ output fields defined at <http://wiki.musicbrainz.org/PicardTagMapping>
 
   return dict
 
-def state_audio_metadata(ts, filename, metadata):
+def state_audio_metadata(ts, file_uri, metadata):
   # it doesn't matter if we add the same statement multiple times, so don't
   # bother checking if it exists (this could cause problems if we have eg.
   # different artist names with the same musicbrainz_artistid
@@ -108,21 +108,31 @@ def state_audio_metadata(ts, filename, metadata):
   ts.state(track_uri, ns['mo'].track_number, tn)
 
   # the particular file
-  file_uri = 'file://' + filename
-  file_uri = RDF.Node(RDF.Uri(file_uri))
-
   ts.state(file_uri, ns['mo'].encodes, track_uri)
 
 if __name__ == '__main__':
   for dirpath, dirnames, filenames in os.walk(path):
-    for name in filenames:
-      file = os.path.join(dirpath, name)
-      metadata = get_audio_metadata(file)
+    for filename in filenames:
+      abs_path = os.path.join(dirpath, filename) # full path
+
+      metadata = get_audio_metadata(abs_path)
       if not metadata:
-        print 'could not extract metadata, skipping', name
+        print 'could not extract metadata, skipping', abs_path
         continue
 
-      state_audio_metadata(TripleStore, file, metadata)
+      file_uri = 'file://' + abs_path
+      file_uri = RDF.Node(RDF.Uri(file_uri))
+
+      track_uri = 'http://zitgist.com/music/track/' + metadata['musicbrainz_trackid'][0]
+      track_uri = RDF.Node(RDF.Uri(track_uri))
+
+      # don't restate files that we already had
+      st = RDF.Statement(file_uri, ns['mo'].encodes, track_uri)
+      if TripleStore.model.contains_statement(st):
+        print 'already had', metadata['title'][0]
+        continue
+
+      state_audio_metadata(TripleStore, file_uri, metadata)
 
   print '---'
 
