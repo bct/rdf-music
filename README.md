@@ -5,6 +5,14 @@
 - redland-bindings (with python support)
 - web.py
 
+## Howto ##
+
+First, tag all your music with picard.
+Then, edit index.py to contain an accurate path to your music.
+Then:
+
+    ./index.py
+    ./viewify.py
 
 ## Backup ##
 
