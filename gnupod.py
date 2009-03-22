@@ -11,7 +11,7 @@ def add_album(album):
   cmd = ['gnupod_addsong.pl', '--decode=mp3']
 
   for track in TripleStore.model.get_targets(album, Vocab.ns['mo'].track):
-    cmd.append(track_filename(track))
+    cmd.append(Vocab.track_filename(track))
 
   artist = TripleStore.model.get_target(album, Vocab.ns['foaf'].maker)
   for tag in Vocab.tags(artist):
