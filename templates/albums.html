@@ -21,7 +21,7 @@ function app_path(path) {
 $def show_albums(artist_uri):
     <ul>
       $for title, album_uri in albums[artist_uri]:
-          <li class="album" about="$album_uri.uri">$title
+          <li class="album" about="$album_uri.uri"><span class='title'>$title</span>
             $ r = int(rating(album_uri) / 2)
             <span class="score" property="nao:numericRating" content="$r">
               $# filled stars

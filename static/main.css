@@ -48,3 +48,12 @@ li.album {
   font-size: 2em;
   cursor: pointer;
 }
+
+#ipodQueue {
+  position: fixed;
+  width: 5em;
+  right: 1em;
+  top: 1em;
+
+  border: 1px solid black;
+}
